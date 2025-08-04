@@ -17,15 +17,32 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:reset": "prisma migrate reset --force --skip-seed",
+    "migrate:prod": "prisma migrate deploy",
+    "migrate:status": "prisma migrate status",
+    "generate": "prisma generate",
+    "validate": "prisma validate",
+    "studio": "prisma studio"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.2.0",
     "@prisma/client": "^6.11.1",
+    "@types/bcrypt": "^6.0.0",
+    "@types/passport-local": "^1.0.38",
+    "bcrypt": "^6.0.0",
+    "class-validator": "^0.14.2",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
