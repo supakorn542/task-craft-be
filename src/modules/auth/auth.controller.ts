@@ -13,7 +13,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthRequest } from './entities/auth.entity';
-import { UserEntity } from 'src/user/entities/user.entity';
+import { User } from '@prisma/client';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -73,7 +73,6 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  @ApiOkResponse({ description: 'Return current user ID', type: UserEntity })
   @ApiUnauthorizedResponse({
     description: 'User is not logged in or token is invalid',
   })
