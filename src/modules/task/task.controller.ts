@@ -8,6 +8,7 @@ import {
   Delete,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import {
@@ -18,6 +19,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Task } from '@prisma/client';
 import { ApiResponse } from '@nestjs/swagger';
+import { GetPaginatedTaskResponseDto, GetTaskRequestDto } from './dto/get-task-list.dto';
 
 @Controller('task')
 export class TaskController {
@@ -37,4 +39,17 @@ export class TaskController {
     const userId = req.user.id;
     return this.taskService.createTask(userId, dto);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  @ApiResponse({
+    status: 200,
+    type: GetPaginatedTaskResponseDto,
+    description: 'Get all tasks of the user with optional filters and pagination',
+  })
+  async getTasks(@Req() req, @Query() query: GetTaskRequestDto){
+    const userId = req.user.id;
+    return this.taskService.getTasks(userId, query)
+  }
+
 }
