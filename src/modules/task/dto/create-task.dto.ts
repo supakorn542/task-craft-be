@@ -8,7 +8,7 @@ import {
   IsDateString,
 } from 'class-validator';
 
-import { TaskStatus, Priority } from '@prisma/client';
+import { TaskStatus } from '@prisma/client';
 
 export class CreateTaskRequestDto {
   @ApiProperty({
@@ -23,6 +23,7 @@ export class CreateTaskRequestDto {
     example: 'Complete the final report by Friday',
     description: 'Detailed description of the task',
     required: false,
+    nullable: true,
   })
   @IsOptional()
   @IsString()
@@ -36,22 +37,14 @@ export class CreateTaskRequestDto {
   })
   @IsOptional()
   @IsEnum(TaskStatus)
-  status?: TaskStatus;
+  status: TaskStatus;
 
-  @ApiProperty({
-    enum: Priority,
-    example: Priority.MEDIUM,
-    description: 'Priority of the task',
-    required: false,
-  })
-  @IsOptional()
-  @IsEnum(Priority)
-  priority?: Priority;
 
   @ApiProperty({
     example: '2025-09-01T12:00:00Z',
     description: 'Due date of the task in ISO string format',
     required: false,
+    nullable: true,
   })
   @IsOptional()
   @IsDateString()
@@ -74,8 +67,6 @@ export class CreateTaskResponseDto {
   @ApiProperty({ enum: TaskStatus, example: TaskStatus.PENDING })
   status: TaskStatus;
 
-  @ApiProperty({ enum: Priority, example: Priority.MEDIUM })
-  priority: Priority;
   @ApiProperty({
     example: '2025-09-01T12:00:00Z',
     required: false,

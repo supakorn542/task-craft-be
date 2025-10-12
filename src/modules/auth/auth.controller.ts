@@ -14,6 +14,7 @@ import { UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthRequest } from './entities/auth.entity';
 import { User } from '@prisma/client';
+import { UserDto } from './dto/user.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -73,15 +74,16 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: UserDto }) 
   @ApiUnauthorizedResponse({
     description: 'User is not logged in or token is invalid',
   })
-  getProfile(@Req() req: AuthRequest) {
+  getProfile(@Req() req: AuthRequest): UserDto {
     const user = req.user;
     return {
       id: user.id,
       email: user.email,
-      userName: user.userName,
+      userName: user.userName ?? undefined,
     };
   }
 }

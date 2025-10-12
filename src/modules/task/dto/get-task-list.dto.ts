@@ -1,6 +1,12 @@
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEnum, IsNumber } from 'class-validator';
-import { TaskStatus, Priority } from '@prisma/client';
+import { TaskStatus } from '@prisma/client';
+
+export enum DateFilter {
+  ALL = 'ALL',
+  TODAY = 'TODAY',
+  UPCOMING = 'UPCOMING',
+}
 
 export class GetTaskRequestDto {
   @ApiPropertyOptional({ enum: TaskStatus })
@@ -8,10 +14,10 @@ export class GetTaskRequestDto {
   @IsEnum(TaskStatus)
   status?: TaskStatus;
 
-  @ApiPropertyOptional({ enum: Priority })
+  @ApiPropertyOptional({ enum: DateFilter, default: DateFilter.ALL })
   @IsOptional()
-  @IsEnum(Priority)
-  priority?: Priority;
+  @IsEnum(DateFilter)
+  filter?: DateFilter = DateFilter.ALL;
 
   @ApiPropertyOptional({ example: 'project' })
   @IsOptional()
@@ -34,14 +40,14 @@ export class GetTaskResponseDto {
   @ApiProperty()
   title: string;
 
-  @ApiProperty({ required: false, nullable: true })
-  description: string | null;
+  @ApiProperty()
+  description?: string;
 
   @ApiProperty({ enum: TaskStatus })
   status: TaskStatus;
 
-  @ApiProperty({ enum: Priority })
-  priority: Priority;
+  @ApiProperty({ type: String, format: 'date-time'})
+  dueDate?: Date;
 
   @ApiProperty()
   createdAt: Date;
