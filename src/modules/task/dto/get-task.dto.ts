@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TaskStatus } from '@prisma/client';
-
+import { TagResponseDto } from 'src/tag/dto/tag.dto';
 
 export class GetTaskDetailResponseDto {
   @ApiProperty()
@@ -17,4 +17,7 @@ export class GetTaskDetailResponseDto {
 
   @ApiProperty({ type: String, format: 'date-time' })
   dueDate?: Date;
+
+  @ApiProperty({ type: [TagResponseDto] })
+  tags: TagResponseDto[];
 }

@@ -1,9 +1,9 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateTaskRequestDto } from './create-task.dto';
 import { TaskStatus } from '@prisma/client';
+import { TagResponseDto } from 'src/tag/dto/tag.dto';
 
 export class UpdateTaskRequestDto extends PartialType(CreateTaskRequestDto) {}
-
 
 export class UpdateTaskResponseDto {
   @ApiProperty({ example: 'a1b2c3d4-5678-90ab-cdef-1234567890ab' })
@@ -28,9 +28,12 @@ export class UpdateTaskResponseDto {
   })
   dueDate?: Date;
 
+  @ApiProperty({ type: [TagResponseDto] })
+  tags: TagResponseDto[];
+
   @ApiProperty({ example: '2025-08-27T09:30:00Z' })
   createdAt: Date;
 
-  @ApiProperty({ example: '2025-08-28T11:00:00Z' }) 
+  @ApiProperty({ example: '2025-08-28T11:00:00Z' })
   updatedAt: Date;
 }

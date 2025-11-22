@@ -6,9 +6,11 @@ import {
   IsOptional,
   IsString,
   IsDateString,
+  IsArray,
 } from 'class-validator';
 
 import { TaskStatus } from '@prisma/client';
+import { TagResponseDto } from 'src/tag/dto/tag.dto';
 
 export class CreateTaskRequestDto {
   @ApiProperty({
@@ -39,7 +41,6 @@ export class CreateTaskRequestDto {
   @IsEnum(TaskStatus)
   status: TaskStatus;
 
-
   @ApiProperty({
     example: '2025-09-01T12:00:00Z',
     description: 'Due date of the task in ISO string format',
@@ -49,6 +50,16 @@ export class CreateTaskRequestDto {
   @IsOptional()
   @IsDateString()
   dueDate?: Date;
+
+  @ApiProperty({
+    example: ['c7a9a7a9-...', 'New Project Tag'],
+    description: 'Array of tag IDs or new tag names',
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }
 
 export class CreateTaskResponseDto {
@@ -72,6 +83,9 @@ export class CreateTaskResponseDto {
     required: false,
   })
   dueDate?: Date;
+
+  @ApiProperty({ type: [TagResponseDto] })
+  tags: TagResponseDto[];
 
   @ApiProperty({ example: '2025-08-27T09:30:00Z' })
   createdAt: Date;

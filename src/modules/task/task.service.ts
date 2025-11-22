@@ -26,20 +26,20 @@ export class TaskService {
   ): Promise<CreateTaskResponseDto> {
     const createdTask = await this.taskRepo.create(userId, dto);
 
-    const responseDto: CreateTaskResponseDto = {
-      id: createdTask.id,
-      title: createdTask.title,
-      description: createdTask.description ?? undefined,
-      status: createdTask.status,
-      dueDate: createdTask.dueDate ?? undefined,
-      createdAt: createdTask.createdAt,
-      updatedAt: createdTask.updatedAt,
-    };
+    const taskWithTags = await this.taskRepo.findTaskById(createdTask.id);
 
-    return responseDto;
+    if (!taskWithTags) {
+      throw new NotFoundException('Failed to retrieve task after creation.');
+    }
+
+    return {
+      ...taskWithTags,
+      description: taskWithTags.description ?? undefined,
+      dueDate: taskWithTags.dueDate ?? undefined,
+    };
   }
 
-  async getTasks(
+  async getTaskList(
     userId: string,
     query: GetTaskRequestDto,
   ): Promise<GetPaginatedTaskResponseDto> {
@@ -49,13 +49,9 @@ export class TaskService {
     );
 
     const tasksDto: GetTaskResponseDto[] = tasks.map((task) => ({
-      id: task.id,
-      title: task.title,
+      ...task,
       description: task.description ?? undefined,
-      status: task.status,
       dueDate: task.dueDate ?? undefined,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt,
     }));
 
     return { tasks: tasksDto, total, page, limit };
@@ -67,14 +63,11 @@ export class TaskService {
     if (!task) {
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }
-    const taskDto: GetTaskDetailResponseDto = {
-      id: task.id,
-      title: task.title,
+    return {
+      ...task,
       description: task.description ?? undefined,
-      status: task.status,
       dueDate: task.dueDate ?? undefined,
     };
-    return taskDto;
   }
 
   async updateTask(id: string, updateTaskDto: UpdateTaskRequestDto) {
@@ -83,18 +76,17 @@ export class TaskService {
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }
 
-    const updatedTask = await this.taskRepo.update(id, updateTaskDto);
+    await this.taskRepo.update(id, updateTaskDto);
+    const updatedTaskWithTags = await this.taskRepo.findTaskById(id);
 
-    const responseDto: UpdateTaskResponseDto = {
-      id: updatedTask.id,
-      title: updatedTask.title,
-      description: updatedTask.description ?? undefined,
-      status: updatedTask.status,
-      dueDate: updatedTask.dueDate ?? undefined,
-      createdAt: updatedTask.createdAt,
-      updatedAt: updatedTask.updatedAt,
+    if (!updatedTaskWithTags) {
+      throw new NotFoundException(`Failed to retrieve task after update.`);
+    }
+
+    return {
+      ...updatedTaskWithTags,
+      description: updatedTaskWithTags.description ?? undefined,
+      dueDate: updatedTaskWithTags.dueDate ?? undefined,
     };
-
-    return responseDto;
   }
 }

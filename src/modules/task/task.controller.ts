@@ -59,7 +59,7 @@ export class TaskController {
   })
   async getTasks(@Req() req, @Query() query: GetTaskRequestDto) {
     const userId = req.user.id;
-    return this.taskService.getTasks(userId, query);
+    return this.taskService.getTaskList(userId, query);
   }
 
   @UseGuards(JwtAuthGuard)

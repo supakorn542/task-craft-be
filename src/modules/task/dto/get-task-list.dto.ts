@@ -1,6 +1,13 @@
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEnum, IsNumber } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsUUID,
+} from 'class-validator';
 import { TaskStatus } from '@prisma/client';
+import { TagResponseDto } from 'src/tag/dto/tag.dto';
 
 export enum DateFilter {
   ALL = 'ALL',
@@ -31,6 +38,11 @@ export class GetTaskRequestDto {
   @ApiPropertyOptional({ example: 10 })
   @IsOptional()
   limit?: number;
+
+  @ApiPropertyOptional({ description: 'Filter tasks by a specific tag ID' })
+  @IsOptional()
+  @IsUUID()
+  tagId?: string;
 }
 
 export class GetTaskResponseDto {
@@ -46,8 +58,11 @@ export class GetTaskResponseDto {
   @ApiProperty({ enum: TaskStatus })
   status: TaskStatus;
 
-  @ApiProperty({ type: String, format: 'date-time'})
+  @ApiProperty({ type: String, format: 'date-time' })
   dueDate?: Date;
+
+  @ApiProperty({ type: [TagResponseDto] }) 
+  tags: TagResponseDto[];
 
   @ApiProperty()
   createdAt: Date;

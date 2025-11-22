@@ -6,9 +6,10 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { TaskModule } from './modules/task/task.module';
+import { TagModule } from './tag/tag.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UserModule, TaskModule],
+  imports: [PrismaModule, AuthModule, UserModule, TaskModule, TagModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
   exports: [PrismaService]
