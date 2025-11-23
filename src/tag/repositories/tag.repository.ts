@@ -18,7 +18,11 @@ export class TagRepository {
       include: {
         _count: {
           select: {
-            tasks: true,
+            tasks: {
+              where: {
+                deletedAt: null,
+              },
+            },
           },
         },
       },

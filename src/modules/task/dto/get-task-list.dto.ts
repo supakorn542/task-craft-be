@@ -5,14 +5,26 @@ import {
   IsEnum,
   IsNumber,
   IsUUID,
+  IsArray,
 } from 'class-validator';
 import { TaskStatus } from '@prisma/client';
 import { TagResponseDto } from 'src/tag/dto/tag.dto';
+import { Transform } from 'class-transformer';
 
 export enum DateFilter {
   ALL = 'ALL',
   TODAY = 'TODAY',
   UPCOMING = 'UPCOMING',
+}
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
+export enum TaskSortBy {
+  CREATED_AT = 'createdAt',
+  DUE_DATE = 'dueDate',
 }
 
 export class GetTaskRequestDto {
@@ -33,16 +45,43 @@ export class GetTaskRequestDto {
 
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()
+  @Transform(({ value }) => parseInt(value))
   page?: number;
 
   @ApiPropertyOptional({ example: 10 })
   @IsOptional()
+  @Transform(({ value }) => parseInt(value))
   limit?: number;
 
-  @ApiPropertyOptional({ description: 'Filter tasks by a specific tag ID' })
+  @ApiPropertyOptional({
+    description: 'Filter tasks by tag IDs',
+    type: [String],
+  })
   @IsOptional()
-  @IsUUID()
-  tagId?: string;
+  @IsArray()
+  @IsString({ each: true })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.includes(',') ? value.split(',') : [value];
+    }
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    return [];
+  })
+  tagIds?: string[];
+
+  @ApiPropertyOptional({ enum: TaskSortBy, default: TaskSortBy.CREATED_AT })
+  @IsOptional()
+  @IsEnum(TaskSortBy)
+  sortBy?: TaskSortBy = TaskSortBy.CREATED_AT;
+
+  @ApiPropertyOptional({ enum: SortOrder, default: SortOrder.DESC })
+  @IsOptional()
+  @IsEnum(SortOrder)
+  order?: SortOrder = SortOrder.DESC;
 }
 
 export class GetTaskResponseDto {
@@ -61,7 +100,7 @@ export class GetTaskResponseDto {
   @ApiProperty({ type: String, format: 'date-time' })
   dueDate?: Date;
 
-  @ApiProperty({ type: [TagResponseDto] }) 
+  @ApiProperty({ type: [TagResponseDto] })
   tags: TagResponseDto[];
 
   @ApiProperty()

@@ -29,6 +29,7 @@ import {
   UpdateTaskRequestDto,
   UpdateTaskResponseDto,
 } from './dto/update-task.dto';
+import { TaskResponseDto } from './dto/task.dto';
 
 @Controller('task')
 export class TaskController {
@@ -70,8 +71,11 @@ export class TaskController {
     description: 'Get  task by id',
   })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  async getTask(@Param('id') id: string): Promise<GetTaskDetailResponseDto> {
-    return this.taskService.getTask(id);
+  async getTask(
+    @Param('id') id: string,
+    @Req() req,
+  ): Promise<GetTaskDetailResponseDto> {
+    return this.taskService.getTask(id, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -83,8 +87,23 @@ export class TaskController {
   })
   async updateTask(
     @Param('id') id: string,
+    @Req() req,
     @Body() updateTaskDto: UpdateTaskRequestDto,
   ): Promise<UpdateTaskResponseDto> {
-    return this.taskService.updateTask(id, updateTaskDto);
+    return this.taskService.updateTask(id, req.user.id, updateTaskDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  @ApiResponse({
+    status: 200,
+    type: TaskResponseDto,
+    description: 'Delete Task',
+  })
+  async deleteTask(
+    @Param('id') id: string,
+    @Req() req,
+  ): Promise<TaskResponseDto> {
+    return this.taskService.deleteTask(id, req.user.id);
   }
 }

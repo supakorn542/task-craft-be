@@ -54,20 +54,30 @@ export class TaskRepository {
           connect: tagConnectOps,
         },
       },
+      include: { tags: true },
     });
   }
 
   async findAllByUser(userId: string, query: GetTaskRequestDto) {
-    const { page = 1, limit = 10, status, search, filter, tagId } = query;
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      search,
+      filter,
+      tagIds,
+      sortBy,
+      order,
+    } = query;
 
-    const where: any = { userId };
+    const where: any = { userId, deletedAt: null };
     if (status) where.status = status;
     if (search) where.title = { contains: search, mode: 'insensitive' };
 
-    if (tagId) {
+    if (tagIds && tagIds.length > 0) {
       where.tags = {
         some: {
-          id: tagId,
+          id: { in: tagIds },
         },
       };
     }
@@ -94,12 +104,14 @@ export class TaskRepository {
     const take = Number(limit);
     const skip = Number((page - 1) * limit);
 
+    const orderBy = { [sortBy || 'createdAt']: order || 'desc' };
+
     const [tasks, total] = await this.prisma.$transaction([
       this.prisma.task.findMany({
         where,
         skip,
         take,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         include: {
           tags: true,
         },
@@ -110,9 +122,11 @@ export class TaskRepository {
     return { tasks, total, page, limit };
   }
 
-  async findTaskById(id: string) {
-    const where: any = { id };
-    return this.prisma.task.findUnique({
+  async findTaskById(id: string, userId: string) {
+    const where: any = { id, deletedAt: null };
+    if (userId) where.userId = userId;
+
+    return this.prisma.task.findFirst({
       where,
       include: {
         tags: true,
@@ -120,7 +134,23 @@ export class TaskRepository {
     });
   }
 
-  async update(id: string, updateTaskDto: UpdateTaskRequestDto) {
+  async update(
+    id: string,
+    userId: string,
+    updateTaskDto: UpdateTaskRequestDto,
+  ) {
+    const existingTask = await this.prisma.task.findFirst({
+      where: {
+        id,
+        userId,
+        deletedAt: null,
+      },
+    });
+
+    if (!existingTask) throw new NotFoundException(`Task not found`);
+    if (existingTask.userId !== userId)
+      throw new NotFoundException(`Task not found`);
+
     const { tags, ...dataToUpdate } = updateTaskDto;
 
     let tagConnectOps: { id: string }[] | undefined = undefined;
@@ -148,7 +178,34 @@ export class TaskRepository {
         ...dataToUpdate,
         tags: tagConnectOps ? { set: tagConnectOps } : undefined,
       },
+      include: { tags: true },
     });
     return updateTask;
+  }
+
+  async softDelete(id: string, userId: string) {
+    const existingTask = await this.prisma.task.findFirst({
+      where: {
+        id: id,
+        userId: userId,
+        deletedAt: null,
+      },
+    });
+
+    if (!existingTask) {
+      throw new NotFoundException(`Task not found`);
+    }
+
+    return this.prisma.task.update({
+      where: {
+        id,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+      include: {
+        tags: true,
+      },
+    });
   }
 }

@@ -4,7 +4,7 @@ import {
   CreateTaskResponseDto,
 } from './dto/create-task.dto';
 
-import { Task } from '@prisma/client';
+import { Task, Tag } from '@prisma/client';
 import { TaskRepository } from './repositories/task.repository';
 import {
   GetTaskRequestDto,
@@ -16,27 +16,29 @@ import {
   UpdateTaskRequestDto,
   UpdateTaskResponseDto,
 } from './dto/update-task.dto';
+import { TaskResponseDto } from './dto/task.dto';
+
+type TaskWithTags = Task & { tags: Tag[] };
 
 @Injectable()
 export class TaskService {
   constructor(private taskRepo: TaskRepository) {}
+
+  private mapToDto(task: TaskWithTags) {
+    return {
+      ...task,
+      description: task.description ?? undefined,
+      dueDate: task.dueDate ?? undefined,
+      deletedAt: task.deletedAt ?? undefined,
+    };
+  }
   async createTask(
     userId: string,
     dto: CreateTaskRequestDto,
   ): Promise<CreateTaskResponseDto> {
-    const createdTask = await this.taskRepo.create(userId, dto);
+    const task = await this.taskRepo.create(userId, dto);
 
-    const taskWithTags = await this.taskRepo.findTaskById(createdTask.id);
-
-    if (!taskWithTags) {
-      throw new NotFoundException('Failed to retrieve task after creation.');
-    }
-
-    return {
-      ...taskWithTags,
-      description: taskWithTags.description ?? undefined,
-      dueDate: taskWithTags.dueDate ?? undefined,
-    };
+    return this.mapToDto(task as TaskWithTags);
   }
 
   async getTaskList(
@@ -57,36 +59,25 @@ export class TaskService {
     return { tasks: tasksDto, total, page, limit };
   }
 
-  async getTask(id: string): Promise<GetTaskDetailResponseDto> {
-    const task = await this.taskRepo.findTaskById(id);
-
-    if (!task) {
-      throw new NotFoundException(`Task with ID "${id}" not found`);
-    }
-    return {
-      ...task,
-      description: task.description ?? undefined,
-      dueDate: task.dueDate ?? undefined,
-    };
+  async getTask(id: string, userId: string): Promise<GetTaskDetailResponseDto> {
+    const task = await this.taskRepo.findTaskById(id, userId);
+    if (!task) throw new NotFoundException(`Task not found`);
+    return this.mapToDto(task);
   }
 
-  async updateTask(id: string, updateTaskDto: UpdateTaskRequestDto) {
-    const existingTask = await this.taskRepo.findTaskById(id);
-    if (!existingTask) {
-      throw new NotFoundException(`Task with ID "${id}" not found`);
-    }
+  async updateTask(
+    id: string,
+    userId: string,
+    updateTaskDto: UpdateTaskRequestDto,
+  ) {
+    const updatedTask = await this.taskRepo.update(id, userId, updateTaskDto);
 
-    await this.taskRepo.update(id, updateTaskDto);
-    const updatedTaskWithTags = await this.taskRepo.findTaskById(id);
+    return this.mapToDto(updatedTask);
+  }
 
-    if (!updatedTaskWithTags) {
-      throw new NotFoundException(`Failed to retrieve task after update.`);
-    }
+  async deleteTask(id: string, userId: string): Promise<TaskResponseDto> {
+    const deletedTask = await this.taskRepo.softDelete(id, userId);
 
-    return {
-      ...updatedTaskWithTags,
-      description: updatedTaskWithTags.description ?? undefined,
-      dueDate: updatedTaskWithTags.dueDate ?? undefined,
-    };
+    return this.mapToDto(deletedTask);
   }
 }
