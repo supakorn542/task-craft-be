@@ -33,7 +33,7 @@ export class CreateTaskRequestDto {
 
   @ApiProperty({
     enum: TaskStatus,
-    example: TaskStatus.PENDING,
+    example: TaskStatus.TO_DO,
     description: 'Current status of the task',
     required: false,
   })
@@ -75,7 +75,7 @@ export class CreateTaskResponseDto {
   })
   description?: string;
 
-  @ApiProperty({ enum: TaskStatus, example: TaskStatus.PENDING })
+  @ApiProperty({ enum: TaskStatus, example: TaskStatus.TO_DO })
   status: TaskStatus;
 
   @ApiProperty({

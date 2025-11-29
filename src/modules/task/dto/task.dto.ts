@@ -16,7 +16,7 @@ export class TaskResponseDto {
   })
   description?: string;
 
-  @ApiProperty({ enum: TaskStatus, example: TaskStatus.PENDING })
+  @ApiProperty({ enum: TaskStatus, example: TaskStatus.TO_DO })
   status: TaskStatus;
 
   @ApiProperty({
