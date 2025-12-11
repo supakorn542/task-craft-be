@@ -68,6 +68,8 @@ export class TaskRepository {
       tagIds,
       sortBy,
       order,
+      startDate,
+      endDate,
     } = query;
 
     const where: any = { userId, deletedAt: null };
@@ -82,23 +84,16 @@ export class TaskRepository {
       };
     }
 
-    if (filter && filter !== DateFilter.ALL) {
-      if (filter === DateFilter.TODAY) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
 
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
+      end.setDate(end.getDate() + 1);
 
-        where.dueDate = { gte: today, lt: tomorrow };
-      }
-
-      if (filter === DateFilter.UPCOMING) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        where.dueDate = { gt: today };
-      }
+      where.dueDate = {
+        gte: start,
+        lt: end,
+      };
     }
 
     const take = Number(limit);
@@ -203,6 +198,105 @@ export class TaskRepository {
       data: {
         deletedAt: new Date(),
       },
+      include: {
+        tags: true,
+      },
+    });
+  }
+
+  async countByStatus(userId: string) {
+    return this.prisma.task.groupBy({
+      by: ['status'],
+      _count: {
+        status: true,
+      },
+      where: {
+        userId,
+        deletedAt: null,
+      },
+    });
+  }
+
+  async getSummary(userId: string) {
+    const now = new Date();
+
+    const [total, completed, inProgress, overdue] = await Promise.all([
+      this.prisma.task.count({
+        where: {
+          userId,
+          deletedAt: null,
+        },
+      }),
+
+      this.prisma.task.count({
+        where: {
+          userId,
+          deletedAt: null,
+          status: 'DONE',
+        },
+      }),
+
+      this.prisma.task.count({
+        where: {
+          userId,
+          deletedAt: null,
+          NOT: { status: 'DONE' },
+        },
+      }),
+
+      this.prisma.task.count({
+        where: {
+          userId,
+          deletedAt: null,
+          NOT: { status: 'DONE' },
+          dueDate: { lt: now },
+        },
+      }),
+    ]);
+
+    return { total, completed, inProgress, overdue };
+  }
+
+  async getSevenDaysAgoTaskNumber(userId: string) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const [created, completed] = await Promise.all([
+      this.prisma.task.findMany({
+        where: {
+          userId,
+          deletedAt: null,
+          createdAt: {
+            gte: sevenDaysAgo,
+          },
+        },
+        select: { createdAt: true },
+      }),
+      this.prisma.task.findMany({
+        where: {
+          userId,
+          deletedAt: null,
+          updatedAt: {
+            gte: sevenDaysAgo,
+          },
+          status: 'DONE',
+        },
+        select: { updatedAt: true },
+      }),
+    ]);
+
+    return { created, completed };
+  }
+
+  async findRecent(userId: string) {
+    return this.prisma.task.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 5,
       include: {
         tags: true,
       },

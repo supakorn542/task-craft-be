@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TaskStatus } from '@prisma/client';
-import { TagResponseDto } from 'src/tag/dto/tag.dto';
+import { TagResponseDto } from 'src/modules/tag/dto/tag.dto';
 
 export class GetTaskDetailResponseDto {
   @ApiProperty()

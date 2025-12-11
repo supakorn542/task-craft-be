@@ -1,7 +1,7 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateTaskRequestDto } from './create-task.dto';
 import { TaskStatus } from '@prisma/client';
-import { TagResponseDto } from 'src/tag/dto/tag.dto';
+import { TagResponseDto } from 'src/modules/tag/dto/tag.dto';
 
 export class UpdateTaskRequestDto extends PartialType(CreateTaskRequestDto) {}
 

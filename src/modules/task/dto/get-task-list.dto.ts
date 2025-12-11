@@ -6,9 +6,10 @@ import {
   IsNumber,
   IsUUID,
   IsArray,
+  IsDateString,
 } from 'class-validator';
 import { TaskStatus } from '@prisma/client';
-import { TagResponseDto } from 'src/tag/dto/tag.dto';
+import { TagResponseDto } from 'src/modules/tag/dto/tag.dto';
 import { Transform } from 'class-transformer';
 
 export enum DateFilter {
@@ -82,6 +83,16 @@ export class GetTaskRequestDto {
   @IsOptional()
   @IsEnum(SortOrder)
   order?: SortOrder = SortOrder.DESC;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
 }
 
 export class GetTaskResponseDto {

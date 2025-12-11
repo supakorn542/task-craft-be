@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 
 import { TaskStatus } from '@prisma/client';
-import { TagResponseDto } from 'src/tag/dto/tag.dto';
+import { TagResponseDto } from 'src/modules/tag/dto/tag.dto';
 
 export class CreateTaskRequestDto {
   @ApiProperty({
