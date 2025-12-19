@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { CreateTaskRequestDto } from '../dto/create-task.dto';
 import { GetTaskRequestDto } from '../dto/get-task-list.dto';
-import { DateFilter } from '../dto/get-task-list.dto';
 import { UpdateTaskRequestDto } from '../dto/update-task.dto';
 import { isUUID } from 'class-validator';
 
@@ -64,7 +63,6 @@ export class TaskRepository {
       limit = 10,
       status,
       search,
-      filter,
       tagIds,
       sortBy,
       order,
@@ -84,16 +82,18 @@ export class TaskRepository {
       };
     }
 
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+    if (startDate || endDate) {
+      where.dueDate = {};
 
-      end.setDate(end.getDate() + 1);
+      if (startDate) {
+        where.dueDate.gte = new Date(startDate);
+      }
 
-      where.dueDate = {
-        gte: start,
-        lt: end,
-      };
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setDate(end.getDate() + 1);
+        where.dueDate.lt = end;
+      }
     }
 
     const take = Number(limit);

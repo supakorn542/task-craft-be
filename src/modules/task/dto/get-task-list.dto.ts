@@ -12,11 +12,6 @@ import { TaskStatus } from '@prisma/client';
 import { TagResponseDto } from 'src/modules/tag/dto/tag.dto';
 import { Transform } from 'class-transformer';
 
-export enum DateFilter {
-  ALL = 'ALL',
-  TODAY = 'TODAY',
-  UPCOMING = 'UPCOMING',
-}
 
 export enum SortOrder {
   ASC = 'asc',
@@ -33,11 +28,6 @@ export class GetTaskRequestDto {
   @IsOptional()
   @IsEnum(TaskStatus)
   status?: TaskStatus;
-
-  @ApiPropertyOptional({ enum: DateFilter, default: DateFilter.ALL })
-  @IsOptional()
-  @IsEnum(DateFilter)
-  filter?: DateFilter = DateFilter.ALL;
 
   @ApiPropertyOptional({ example: 'project' })
   @IsOptional()

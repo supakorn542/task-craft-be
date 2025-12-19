@@ -7,10 +7,11 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto, UpdateUserDto } from './dto/update-user.dto';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -18,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -58,5 +60,26 @@ export class UserController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'updated profile successfully',
+  })
+  async updateProfile(@Req() req, @Body() dto: UpdateProfileDto) {
+    return this.userService.updateProfile(req.user.id, dto);
+  }
+
+  @Patch('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Change password' })
+  @ApiResponse({
+    status: 200,
+    description: 'change password successfully',
+  })
+  async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
+    return this.userService.changePassword(req.user.id, dto);
   }
 }
