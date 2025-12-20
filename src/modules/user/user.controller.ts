@@ -8,10 +8,12 @@ import {
   Delete,
   UseGuards,
   Req,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateProfileDto, UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserRequestDto, UserResponseDto } from './dto/create-user.dto';
+import { UpdateProfileDto } from './dto/update-user.dto';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -28,10 +30,11 @@ export class UserController {
 
   @Post()
   @ApiOperation({ summary: 'Create new user' })
-  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiResponse({ status: 201,type: UserResponseDto, description: 'User created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async create(@Body() dto: CreateUserRequestDto): Promise<UserResponseDto> {
+    const user = await this.userService.create(dto);
+    return new UserResponseDto(user);
   }
 
   @Get()

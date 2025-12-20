@@ -3,7 +3,7 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserRequestDto } from './dto/create-user.dto';
 import { UpdateProfileDto, UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -15,7 +15,7 @@ export const roundsOfHashing = 10;
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserRequestDto) {
     const hashedPassword = await bcrypt.hash(
       createUserDto.password,
       roundsOfHashing,
