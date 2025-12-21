@@ -21,6 +21,9 @@ model User {
   tasks     Task[]
   tags      Tag[]
   createdAt DateTime @default(now())
+
+  resetToken       String?   
+  resetTokenExpiry DateTime?
 }
 
 model Task {

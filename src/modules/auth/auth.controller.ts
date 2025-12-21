@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import {
   ApiBody,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -15,6 +16,7 @@ import { Response } from 'express';
 import { AuthRequest } from './entities/auth.entity';
 import { User } from '@prisma/client';
 import { UserDto } from './dto/user.dto';
+import { ForgotPasswordDto, ResetPasswordDto } from './dto/forgot-password.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -74,7 +76,7 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  @ApiOkResponse({ type: UserDto }) 
+  @ApiOkResponse({ type: UserDto })
   @ApiUnauthorizedResponse({
     description: 'User is not logged in or token is invalid',
   })
@@ -85,5 +87,17 @@ export class AuthController {
       email: user.email,
       userName: user.userName ?? undefined,
     };
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Request password reset link' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Set new password with token' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.newPassword);
   }
 }

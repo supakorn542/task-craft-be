@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -7,14 +8,18 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { AuthEntity } from './entities/auth.entity';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '@prisma/client';
+import { MailerService } from '@nestjs-modules/mailer';
+import { roundsOfHashing } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private mailerService: MailerService,
   ) {}
 
   async login(user: User): Promise<AuthEntity> {
@@ -57,5 +62,70 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) return { message: 'If email exists, reset link sent.' };
+
+    const token = crypto.randomBytes(32).toString('hex');
+
+    const expireIn1Hour = new Date();
+    expireIn1Hour.setHours(expireIn1Hour.getHours() + 1);
+
+    await this.prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        resetToken: token,
+        resetTokenExpiry: expireIn1Hour,
+      },
+    });
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+    await this.mailerService.sendMail({
+      from: '"Task Craft" <noreply@taskcraft.com>',
+      to: email,
+      subject: 'Reset Password Request',
+      html: `
+        <h3>Reset Password</h3>
+        <p>Click the link below to reset your password:</p>
+        <a href="${resetLink}">Click Here to Reset Password</a>
+        <p>This link will expire in 1 hour.</p>
+      `,
+    });
+
+    return { message: 'If email exists, reset link sent.' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExpiry: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, roundsOfHashing);
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    return { message: 'Password reset successfully' };
   }
 }
