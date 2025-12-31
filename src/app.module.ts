@@ -9,6 +9,8 @@ import { TaskModule } from './modules/task/task.module';
 import { TagModule } from './modules/tag/tag.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { NotificationModule } from './modules/notification/notification.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
         from: '"Task Craft Team" <noreply@taskcraft.com>',
       },
     }),
+    NotificationModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

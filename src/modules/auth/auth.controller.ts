@@ -26,6 +26,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @ApiBody({ type: LoginDto })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   @ApiOkResponse({ type: AuthEntity })
   async login(@Request() req, @Res({ passthrough: true }) res: Response) {
     const tokens = await this.authService.login(req.user);

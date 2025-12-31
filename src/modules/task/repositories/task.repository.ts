@@ -302,4 +302,18 @@ export class TaskRepository {
       },
     });
   }
+
+  async findUpcomingTasks(start: Date, end: Date) {
+    return this.prisma.task.findMany({
+      where: {
+        dueDate: { gte: start, lte: end },
+        NOT: { status: 'DONE' },
+        deletedAt: null,
+      },
+
+      include: {
+        user: true,
+      },
+    });
+  }
 }
