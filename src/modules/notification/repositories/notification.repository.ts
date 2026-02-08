@@ -58,4 +58,14 @@ export class NotificationRepository {
       },
     });
   }
+
+  async deleteOlderThan(date: Date) {
+    return this.prisma.notification.deleteMany({
+      where: {
+        createdAt: {
+          lt: date,
+        },
+      },
+    });
+  }
 }
