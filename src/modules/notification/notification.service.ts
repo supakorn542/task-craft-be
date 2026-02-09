@@ -3,6 +3,7 @@ import { NotificationRepository } from './repositories/notification.repository';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { TaskRepository } from '../task/repositories/task.repository';
 import { NotificationGateWay } from './notification.gateway';
+import { getThaiDateRange } from 'src/common/utils/date.util';
 
 @Injectable()
 export class NotificationService {
@@ -12,20 +13,11 @@ export class NotificationService {
     private notificationGateway: NotificationGateWay,
   ) {}
 
-  @Cron('0 0 9 * * *')
+  @Cron('0 0 9 * * *', { timeZone: 'Asia/Bangkok' })
   async handleMorningBrief() {
-    const now = new Date();
+    const { start, end } = getThaiDateRange();
 
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
-
-    const endOfToday = new Date(now);
-    endOfToday.setHours(23, 59, 59, 999);
-
-    const tasks = await this.taskRepo.findUpcomingTasks(
-      startOfToday,
-      endOfToday,
-    );
+    const tasks = await this.taskRepo.findUpcomingTasks(start, end);
 
     const NOTI_TITLE_KEY = 'Notifications.daily_reminder';
 
@@ -55,20 +47,11 @@ export class NotificationService {
     }
   }
 
-  @Cron('0 0 20 * * *')
+  @Cron('0 0 20 * * *', { timeZone: 'Asia/Bangkok' })
   async handleEveningNudge() {
-    const now = new Date();
+    const { start, end } = getThaiDateRange();
 
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
-
-    const endOfToday = new Date(now);
-    endOfToday.setHours(23, 59, 59, 999);
-
-    const unfinishedTasks = await this.taskRepo.findUpcomingTasks(
-      startOfToday,
-      endOfToday,
-    );
+    const unfinishedTasks = await this.taskRepo.findUpcomingTasks(start, end);
 
     const NOTI_TITLE_KEY = 'Notifications.evening_reminder';
 
@@ -110,9 +93,9 @@ export class NotificationService {
     return this.notificationRepo.getUnreadCount(userId);
   }
 
-  @Cron('0 0 0 * * *')
+  @Cron('0 0 0 * * *', { timeZone: 'Asia/Bangkok' })
   async handleCleanup() {
-    const daysToKeep = 3;
+    const daysToKeep = 1;
     const cleanupDate = new Date();
     cleanupDate.setDate(cleanupDate.getDate() - daysToKeep);
 
