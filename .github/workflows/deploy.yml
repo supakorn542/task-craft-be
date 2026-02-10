@@ -57,4 +57,7 @@ jobs:
             -e MAIL_USER="${{ secrets.MAIL_USER }}" \
             -e MAIL_PASS="${{ secrets.MAIL_PASS }}" \
             -e FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
+            -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
+            -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+            -e GOOGLE_CALLBACK_URL="${{ secrets.GOOGLE_CALLBACK_URL }}" \
             ${{ secrets.DOCKER_USERNAME }}/taskcraft-backend:latest
