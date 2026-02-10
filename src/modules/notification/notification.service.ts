@@ -13,7 +13,7 @@ export class NotificationService {
     private notificationGateway: NotificationGateWay,
   ) {}
 
-  @Cron('0 0 9 * * *', { timeZone: 'Asia/Bangkok' })
+  @Cron('0 0 2 * * *')
   async handleMorningBrief() {
     const { start, end } = getThaiDateRange();
 
@@ -47,7 +47,7 @@ export class NotificationService {
     }
   }
 
-  @Cron('0 0 20 * * *', { timeZone: 'Asia/Bangkok' })
+  @Cron('0 0 13 * * *')
   async handleEveningNudge() {
     const { start, end } = getThaiDateRange();
 
@@ -93,7 +93,7 @@ export class NotificationService {
     return this.notificationRepo.getUnreadCount(userId);
   }
 
-  @Cron('0 0 0 * * *', { timeZone: 'Asia/Bangkok' })
+  @Cron('0 0 17 * * *')
   async handleCleanup() {
     const daysToKeep = 1;
     const cleanupDate = new Date();
