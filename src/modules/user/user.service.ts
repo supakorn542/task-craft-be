@@ -65,6 +65,12 @@ export class UserService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new BadRequestException('User not found');
 
+    if (!user.password) {
+      throw new BadRequestException(
+        'User logged in via social provider has no password to change.',
+      );
+    }
+
     const isMatch = await bcrypt.compare(dto.oldPassword, user.password);
     if (!isMatch) {
       throw new ForbiddenException('Incorrect old password');

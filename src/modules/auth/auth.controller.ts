@@ -17,6 +17,8 @@ import { AuthRequest } from './entities/auth.entity';
 import { User } from '@prisma/client';
 import { UserDto } from './dto/user.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/forgot-password.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -100,5 +102,33 @@ export class AuthController {
   @ApiOperation({ summary: 'Set new password with token' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.token, dto.newPassword);
+  }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth(@Req() req) {}
+
+  @Get('google/redirect')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+    const user = await this.authService.validateGoogleUser(req.user);
+
+    const { accessToken, refreshToken } = await this.authService.login(user);
+
+    res.cookie('AccessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      maxAge: 60 * 60 * 1000,
+      sameSite: 'lax',
+    });
+
+    res.cookie('RefreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: 'lax',
+    });
+
+    return res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
   }
 }

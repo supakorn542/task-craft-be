@@ -35,6 +35,12 @@ jobs:
           key: ${{secrets.EC2_SSH_KEY}}
           script: |
             docker pull ${{secrets.DOCKER_USERNAME}}/taskcraft-backend:latest
+
+            docker run --rm \
+            -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            ${{ secrets.DOCKER_USERNAME }}/taskcraft-backend:latest \
+            npx prisma migrate deploy
+
             docker stop backend || true
             docker rm backend || true
 

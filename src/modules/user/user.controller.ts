@@ -30,11 +30,18 @@ export class UserController {
 
   @Post()
   @ApiOperation({ summary: 'Create new user' })
-  @ApiResponse({ status: 201,type: UserResponseDto, description: 'User created successfully' })
+  @ApiResponse({
+    status: 201,
+    type: UserResponseDto,
+    description: 'User created successfully',
+  })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async create(@Body() dto: CreateUserRequestDto): Promise<UserResponseDto> {
     const user = await this.userService.create(dto);
-    return new UserResponseDto(user);
+    return new UserResponseDto({
+      ...user,
+      password: user.password ?? undefined,
+    });
   }
 
   @Get()

@@ -9,10 +9,10 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthEntity } from './entities/auth.entity';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { LoginDto } from './dto/login.dto';
 import { User } from '@prisma/client';
 import { MailerService } from '@nestjs-modules/mailer';
 import { roundsOfHashing } from '../user/user.service';
+import { GoogleUser } from './dto/google-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +40,12 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundException(`No user found for email: ${email}`);
+    }
+
+    if (!user.password) {
+      throw new UnauthorizedException(
+        'Please login with Google for this email.',
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -127,5 +133,26 @@ export class AuthService {
     });
 
     return { message: 'Password reset successfully' };
+  }
+
+  async validateGoogleUser(googleUser: GoogleUser) {
+    const { email, firstName, lastName, providerId } = googleUser;
+
+    const displayName = [firstName, lastName].filter(Boolean).join(' ');
+
+    let user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          userName: displayName || email.split('@')[0],
+          provider: 'google',
+          providerId
+        },
+      });
+    }
+
+    return user;
   }
 }
